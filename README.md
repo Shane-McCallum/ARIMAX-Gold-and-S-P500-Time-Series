@@ -1,4 +1,4 @@
-# Gold-Time-Series-comparison
+# ARIMAX Gold and S&P500 Time Series
 The purpose of this repository is to compare the value of GOLD with the S&P 500.
 All data has been collected from yahoo!Finance, Macrotrends, and Kaggle.
 All values are in USD.
