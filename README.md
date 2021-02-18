@@ -2,7 +2,7 @@
 The purpose of this repository is to compare the value of GOLD with the S&P 500 index.
 All data has been collected from yahoo!Finance, Macrotrends, and Kaggle.
 All values are in USD.
-Hypothesis: There is a significant relationship between gold (GLD) and the S&P 500 index (SPX) and the value of gold can be predicted from the value of the S&P 500 index. 
-Null Hypothesis: There is no significant relationship between gold and the S&P 500 index.
+Hypothesis: The S&P 500 index has a statistically significant, exogenous effect on the value of gold(GLD).
+Null Hypothesis: S&P 500 index does not have a statistically significant, exogenous effect on the value of gold.
 In order to flesh this out further, I will also include and compare silver (SLV), and the gold 
-mining company Barrick Gold Corp (GOLD) to see how they relate to the S&P 500 index as well as gold.
+mining company Barrick Gold Corp (BARR) to see how they relate to the S&P 500 index as well as gold.
