@@ -14,12 +14,61 @@ Before I write a model, I need to know what the problem I am looking to solve is
 
 From here, I developed the hypothesis for the project:
 
-*Hypothesis: The S&P 500 index has a statistically significant, exogenous effect on the value of gold(GLD).*
+**Hypothesis:** The S&P 500 index has a statistically significant, exogenous effect on the value of gold(GLD).
 
-*Null Hypothesis: S&P 500 index does not have a statistically significant, exogenous effect on the value of gold.*
+**Null Hypothesis:** S&P 500 index does not have a statistically significant, exogenous effect on the value of gold.
+
+## 2. Data Wrangling 
 
 For this capstone I have collected a total of four different csv files. They are:
-1. "gold-price-last-ten-years.csv" as GLD(USD)
-2. "SP500 2007-2020.csv" as SPX(USD)
-3. "silver history.csv" as SLV(USD)
-4. "Barrick Gold Corp 1985-2020.csv" as BARR(USD)
+1. ["gold-price-last-ten-years.csv" as GLD(USD)](https://www.macrotrends.net/2627/gold-price-last-ten-years)
+2. ["SP500 2007-2020.csv" as SPX(USD)](https://www.marketwatch.com/investing/index/spx)
+3. ["silver history.csv" as SLV(USD)](https://www.macrotrends.net/1470/historical-silver-prices-100-year-chart)
+4. ["Barrick Gold Corp 1985-2020.csv" as BARR(USD)](https://finance.yahoo.com/quote/GOLD/history?period1=476323200&period2=1614211200&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true)
+
+Again, the SLV and BARR datasets are not intended for creating a more accurate model, but instead to check if the relationship between GLD and SPX is unique!
+
+In order to accurately train and test a model on this data, it needs to be properly cleaned.
+
+*   **Step 1:** First, I had to decide on a time period for the time series! I was limited by the time frames of the individual CSV files as well as trends in the data. Stock and index values are heavily dependent on trends in the market. Trends in the stock market are periods of time [lasting 18 weeks or more](https://www.investors.com/how-to-invest/investors-corner/sell-rules-growth-stocks-break-uptrend-line/#:~:text=A%20properly%20drawn%20trend%20line,of%20at%20least%2018%20weeks). I chose August 21, 2017 as a start date for the data, as it will have just enough data in the test split (20% of the data) to include a trend within it.
+*   **Step 2:** Next, I had to merge all of the CSV's together onto a common index. I am only concerned about predicting the closing price of GLD, so I only kept the closing value and date columns in each of the other dataframes. Then I set the date column as the index for each of them. After choosing the time frame for the dataframes, I used pd.merge() to merge all of them onto a common index.
+*    **Step 3:** Finally, I had to go through and check for Nan's. Since the stock market is closed on weekends and holidays, I had to figure out what I was going to do to fill the days where no closing price was recorded. I found that historically, other models have often foward filled the Nans for stock data. However, I wanted to be sure this didn't heavily affect the data. So I compared the standard deviations, means, min/max, and quartiles before and after using ffill on the dataframe. I was relieved to see that the greatest change was that the standard deviation for SPX increased by about 68 cents.
+
+## 3. Exploratory Data Analysis (EDA)
+
+Now, for the fun part! My first priority was to visually explore the data to see if there was any support for a statistically significant relationship between SPX and GLD. If there isn't one, then there is no point in trying to develope a predictive model for GLD from SPX. However, time series are tricky; especially stocks, indexes, and values. What is easily derived on the surface is not always reality.
+1. I wanted to look at the timeline of the data and see if there was any apparent trends.
+[graphs]()
+Upon inspection, I noticed that GLD historically rise when SPX was trending downwards. GLD is not immune to market crashes or dips, but it does seem to trend opposite in growth from SPX. This can be seen in BARR vs. SPX as well, since BARR is a gold mining company this is not all that surprising.
+2. Seaborn's jointplot is one of my favorite methods for exploring the relationship between two features.
+[jointplot]()
+Here, it's definitely apparent that there exist a positive, linear trend between GLD and SPX.
+3. Next up was to get some concrete numbers in regards to correlation between each of the features. Seaborn's heatmap is a wonderful way to visualize this.
+[heatmap]()
+Right off the bat, it's clear that BARR and SLV are highly correlated with GLD. Somewhat disappointingly, GLD and SPX don't seem to have a strong correlation.
+4. Fret not though, for there exists some measurements of cointegration between time series. First with Cointegrated Augmented Dickey Fuller ([CADF](https://pythonforfinance.net/2016/05/09/python-backtesting-mean-reversion-part-2/)) test. This test attempts to find a stationary, linear combination from time series' that are not themselves stationary.
+[CADF graph]()
+Well, the graph certainly does not look mean-reverting (stationary). Upon checking the ADF statistic for the graph, the value is -1.44. According to Statsmodels ADF function, a statistically significant ADF score would be less than or equal to -2.865. So again, there doesn't appear to be a significant level of cointegration between GLD and SPX. However, the CADF test is also sensitive to which columns we assign to X and y. The Johansen Cointegration test, though, is not sensitive to which features are assigned to X or Y, and can test for cointegration among 12 time series. [Here is the reference for a pre-written Johansen test.](https://blog.quantinsti.com/johansen-test-cointegration-building-stationary-portfolio/). The Johannsen test has been ruled as being a better test for cointegration so I tried that as well.
+[Johannsen test]()
+Well, the Eigenvectors statistic is 7.61, about half of a statistically significant score of 14.26. GLD and SPX certainly don't have a Johansen cointegration score of anything signifcant. 
+
+However, I could try one more method: [Granger Causality.](https://towardsdatascience.com/granger-causality-and-vector-auto-regressive-model-for-time-series-forecasting-3226a64889a6) Granger Causality test, in short, simply test time series to see if they are useful in forecasting other time series. However, using them for anything outside of economics, as warned by Clive Granger himself, is "ridiculous."
+[Granger Causality]()
+To understand what we have here:
+Row 1, column 2 refers to the p-value of the Granger's Causality test for SPX(USD)_x causing GLD(USD)_y. What we see is a p-value of 0.0388. That is a significant p-value, as it is under the level of significance (0.05)! So, according to the Granger Causality, we could reject the null hypothesis and say with 95% confidence that SPX has a signifacantly causal relationship with GLD.
+
+## 4. Modeling with ARIMA and ARIMAX
+
+To  begin, I wanted to get a baseline of how well I could use the history of GLD to  predict its future. So, to start off I split the data into a train-test split of  80%/20%. I then used a cross validation model to get the best p, d, and q values for an ARIMA model based off of the root of the mean squarred error (RMSE).
+[ARIMA RMSE]()
+In order to lower the time and complexity of the model and overfitting I settled on p, d, q  equal to 2, 1, 1. I then ran a forecasting model along the test data and got an RMSE of 22.837 on the test data. This is stilll low in comparison to the magnitude of the values for GLD and SPX. To understand this better I calculate the mean absolute percentage error (MAPE) to get the percentage in accuracy of predicting the value of GLD compared to the test data. The MAPE percentage is 8.374%, meaning the model was about 92% accurate in forecasting the values of GLD.
+[ARIMA forecasting graph]()
+
+Now, to compare that to an ARIMAX model where SPX is the exogenous variable to GLD. Again, the cross validation model showed that p,d, and q values of 2, 1, 1 were optimal in complexity and RMSE.
+[]()
+
+Testing the ARIMAX model resulted in an RMSE of 22.947 and a MAPE of 8.369%. Only 0.005% better than the ARIMA model.
+
+## 5. Conclusion
+
+Well, overall the difference between the ARIMA and ARIMAX model's is not significant. So, while the ARIMAX model technically outperformed the ARIMA model, and the use of S&P 500 index for predicting the value of Gold could be argued, it is not necessarily any better that predicting the value of Gold without it.
