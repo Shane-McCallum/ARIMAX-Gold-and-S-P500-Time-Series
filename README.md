@@ -99,7 +99,7 @@ Testing the ARIMAX model resulted in an RMSE of 22.947 and a MAPE of 8.369%. Onl
 
 ## 5. Conclusion and Future Tests
 
-Overall, the difference between the ARIMA and ARIMAX models are not significant. So, while the ARIMAX model technically outperformed the ARIMA model, and the use of S&P 500 index for predicting the value of Gold could be argued, it is not necessarily any better than predicting the value of Gold without it. Therefore, I reject the hypothesis that the S&P 500 index has a statistically significant, exogenous effect on the value of gold (GLD) and accept the null hypothesis. 
+Overall, the difference between the ARIMA and ARIMAX models are not significant. So, while the ARIMAX model technically outperformed the ARIMA model, and the use of S&P 500 index for predicting the value of Gold could be argued, it is not necessarily any better than predicting the value of Gold without it. 
 
 Reasons for this have been theorized, such as gold being used to offset decline in the stock market. However, when the USD was backed by gold, the causal relationship between the stock market and gold might have existed. Since the 1970's, though, when the US adopted a fiat currency system, this relationship has changed.
 
