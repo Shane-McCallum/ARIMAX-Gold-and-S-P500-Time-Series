@@ -37,37 +37,63 @@ In order to accurately train and test a model on this data, it needs to be prope
 ## 3. Exploratory Data Analysis (EDA)
 
 Now, for the fun part! My first priority was to visually explore the data to see if there was any support for a statistically significant relationship between SPX and GLD. If there isn't one, then there is no point in trying to develope a predictive model for GLD from SPX. However, time series are tricky; especially stocks, indexes, and values. What is easily derived on the surface is not always reality.
+
 1. I wanted to look at the timeline of the data and see if there was any apparent trends.
-[graphs]()
+
+![graphs](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/Graphs.png)
+
 Upon inspection, I noticed that GLD historically rise when SPX was trending downwards. GLD is not immune to market crashes or dips, but it does seem to trend opposite in growth from SPX. This can be seen in BARR vs. SPX as well, since BARR is a gold mining company this is not all that surprising.
+
 2. Seaborn's jointplot is one of my favorite methods for exploring the relationship between two features.
-[jointplot]()
+
+![jointplot](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/jp1.png)
+![jointplot](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/jp2.png)
+![jointplot](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/jp3.png)
+
 Here, it's definitely apparent that there exist a positive, linear trend between GLD and SPX.
+
 3. Next up was to get some concrete numbers in regards to correlation between each of the features. Seaborn's heatmap is a wonderful way to visualize this.
-[heatmap]()
+
+![heatmap](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/heatmap.png)
+
 Right off the bat, it's clear that BARR and SLV are highly correlated with GLD. Somewhat disappointingly, GLD and SPX don't seem to have a strong correlation.
+
 4. Fret not though, for there exists some measurements of cointegration between time series. First with Cointegrated Augmented Dickey Fuller ([CADF](https://pythonforfinance.net/2016/05/09/python-backtesting-mean-reversion-part-2/)) test. This test attempts to find a stationary, linear combination from time series' that are not themselves stationary.
-[CADF graph]()
-Well, the graph certainly does not look mean-reverting (stationary). Upon checking the ADF statistic for the graph, the value is -1.44. According to Statsmodels ADF function, a statistically significant ADF score would be less than or equal to -2.865. So again, there doesn't appear to be a significant level of cointegration between GLD and SPX. However, the CADF test is also sensitive to which columns we assign to X and y. The Johansen Cointegration test, though, is not sensitive to which features are assigned to X or Y, and can test for cointegration among 12 time series. [Here is the reference for a pre-written Johansen test.](https://blog.quantinsti.com/johansen-test-cointegration-building-stationary-portfolio/). The Johannsen test has been ruled as being a better test for cointegration so I tried that as well.
-[Johannsen test]()
+
+![CADF graph](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/CADF.png)
+![cadf numbers](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/cadf%20numbers.png)
+
+Well, the graph certainly does not look mean-reverting (stationary). Upon checking the ADF statistic for the graph, the value is -1.44. According to Statsmodels ADF function, a statistically significant ADF score would be less than or equal to -2.865. So again, there doesn't appear to be a significant level of cointegration between GLD and SPX. However, the CADF test is also sensitive to which columns we assign to X and y. The Johansen Cointegration test, though, is not sensitive to which features are assigned to X or Y, and can test for cointegration among 12 time series. [Here is the reference for a pre-written Johansen test.](https://blog.quantinsti.com/johansen-test-cointegration-building-stationary-portfolio/). The Johansen test has been ruled as being a better test for cointegration so I tried that as well.
+
+![Johansen test](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/johanssen.png)
+
 Well, the Eigenvectors statistic is 7.61, about half of a statistically significant score of 14.26. GLD and SPX certainly don't have a Johansen cointegration score of anything signifcant. 
 
 However, I could try one more method: [Granger Causality.](https://towardsdatascience.com/granger-causality-and-vector-auto-regressive-model-for-time-series-forecasting-3226a64889a6) Granger Causality test, in short, simply test time series to see if they are useful in forecasting other time series. However, using them for anything outside of economics, as warned by Clive Granger himself, is "ridiculous."
-[Granger Causality]()
+
+![Granger Causality](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/granger.png)
+
 To understand what we have here:
+
 Row 1, column 2 refers to the p-value of the Granger's Causality test for SPX(USD)_x causing GLD(USD)_y. What we see is a p-value of 0.0388. That is a significant p-value, as it is under the level of significance (0.05)! So, according to the Granger Causality, we could reject the null hypothesis and say with 95% confidence that SPX has a signifacantly causal relationship with GLD.
 
 ## 4. Modeling with ARIMA and ARIMAX
 
 To  begin, I wanted to get a baseline of how well I could use the history of GLD to  predict its future. So, to start off I split the data into a train-test split of  80%/20%. I then used a cross validation model to get the best p, d, and q values for an ARIMA model based off of the root of the mean squarred error (RMSE).
-[ARIMA RMSE]()
+
+![ARIMA RMSE](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/ARIMA%20cv.png)
+
 In order to lower the time and complexity of the model and overfitting I settled on p, d, q  equal to 2, 1, 1. I then ran a forecasting model along the test data and got an RMSE of 22.837 on the test data. This is stilll low in comparison to the magnitude of the values for GLD and SPX. To understand this better I calculate the mean absolute percentage error (MAPE) to get the percentage in accuracy of predicting the value of GLD compared to the test data. The MAPE percentage is 8.374%, meaning the model was about 92% accurate in forecasting the values of GLD.
-[ARIMA forecasting graph]()
+
+![ARIMA forecasting graph](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/ARIMA%20graph.png)
 
 Now, to compare that to an ARIMAX model where SPX is the exogenous variable to GLD. Again, the cross validation model showed that p,d, and q values of 2, 1, 1 were optimal in complexity and RMSE.
-[]()
+
+![ARIMAX CV](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/ARIMAX%20cv.png)
 
 Testing the ARIMAX model resulted in an RMSE of 22.947 and a MAPE of 8.369%. Only 0.005% better than the ARIMA model.
+
+![ARIMAX graph](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/ARIMAX%20graph.png)
 
 ## 5. Conclusion
 
