@@ -69,13 +69,15 @@ Well, the graph certainly does not look mean-reverting (stationary). Upon checki
 
 Well, the Eigenvectors statistic is 7.61, about half of a statistically significant score of 14.26. GLD and SPX certainly don't have a Johansen cointegration score of anything signifcant. 
 
-However, I could try one more method: [Granger Causality.](https://towardsdatascience.com/granger-causality-and-vector-auto-regressive-model-for-time-series-forecasting-3226a64889a6) Granger Causality test, in short, simply test time series to see if they are useful in forecasting other time series. However, using them for anything outside of economics, as warned by Clive Granger himself, is "ridiculous."
+However, I could try one more method: [Granger Causality](https://towardsdatascience.com/granger-causality-and-vector-auto-regressive-model-for-time-series-forecasting-3226a64889a6). The Granger Causality test, in short, simply test time series to see if they are useful in forecasting other time series. However, using them for anything outside of economics, as warned by Clive Granger himself, is "ridiculous."
 
 ![Granger Causality](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/granger.png)
 
 To understand what we have here:
 
 Row 1, column 2 refers to the p-value of the Granger's Causality test for SPX(USD)_x causing GLD(USD)_y. What we see is a p-value of 0.0388. That is a significant p-value, as it is under the level of significance (0.05)! So, according to the Granger Causality, we could reject the null hypothesis and say with 95% confidence that SPX has a signifacantly causal relationship with GLD.
+
+Additionally, it can be seen from this table that SPX has a strong causal relationship to BARR, which is not surprising as BARR is a stock value. However, SPX does not have a strong causal relationship to SLV, suggesting that the causal relationship SPX has with GLD is unique and not universal for other precious metals. 
 
 ## 4. Modeling with ARIMA and ARIMAX
 
@@ -95,6 +97,10 @@ Testing the ARIMAX model resulted in an RMSE of 22.947 and a MAPE of 8.369%. Onl
 
 ![ARIMAX graph](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/ARIMAX%20graph.png)
 
-## 5. Conclusion
+## 5. Conclusion and Future Tests
 
-Well, overall the difference between the ARIMA and ARIMAX model's is not significant. So, while the ARIMAX model technically outperformed the ARIMA model, and the use of S&P 500 index for predicting the value of Gold could be argued, it is not necessarily any better that predicting the value of Gold without it. Therefore, I reject the hypothesis that the S&P 500 index has a statistically significant, exogenous effect on the value of gold(GLD) and accept the null hypothesis. Reasons for this have been theorized, such as gold being used to offset decline in the stock market. However, when the USD was backed by gold, the causal relationship between the stock market and gold might have existed. Since the 1970's, though, when the US adopted a fiat currency system, this relationship has changed.
+Overall the difference between the ARIMA and ARIMAX model's is not significant. So, while the ARIMAX model technically outperformed the ARIMA model, and the use of S&P 500 index for predicting the value of Gold could be argued, it is not necessarily any better than predicting the value of Gold without it. Therefore, I reject the hypothesis that the S&P 500 index has a statistically significant, exogenous effect on the value of gold(GLD) and accept the null hypothesis. 
+
+Reasons for this have been theorized, such as gold being used to offset decline in the stock market. However, when the USD was backed by gold, the causal relationship between the stock market and gold might have existed. Since the 1970's, though, when the US adopted a fiat currency system, this relationship has changed.
+
+Perhaps a better test would be to see if the value of gold could be accurately predicted from the Barrick Gold Mining, Corp. stock. This could be significant as Barricks stock was shown to be caused byed the value of the S&P 500 index as well.
