@@ -8,7 +8,7 @@
 
 [Problem Statement PDF](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/Capstone%20Problem%20Statement%20%5BShane%20McCallum%5D.pptx.pdf)
 
-Before I write a model, I need to know what the problem I am looking to solve is. In a capstone project like this, I have to come up with my own problem and hypothesis. Having no experience in the investment sector, I decided to ask my own financial advisor for some insight on how portfolio strategies are developed and balanced. After an informative conversation, I settled for a simple problem to investigate and solve:
+Before I write a model, I need to know what the problem I am looking to solve is. In a project like this, I have to come up with my own problem and hypothesis. Having no experience in the investment sector, I decided to ask my own financial advisor for some insight on how portfolio strategies are developed and balanced. After an informative conversation, I settled for a simple problem to investigate and solve:
 
 *A client is developing an investment portfolio for their customers and wants to test the theory that the price of gold per ounce (GLD) can be predicted from the S&P 500 Index (SPX). Barrick Gold Mining, Corp (BARR) and the price of silver/ounce (SLV) has been included to compare the uniqueness of the relationship between SPX and GLD.*
 
@@ -20,7 +20,7 @@ From here, I developed the hypothesis for the project:
 
 ## 2. Data Wrangling 
 
-For this capstone I have collected a total of four different csv files. They are:
+For this project I have collected a total of four different csv files. They are:
 1. ["gold-price-last-ten-years.csv" as GLD(USD)](https://www.macrotrends.net/2627/gold-price-last-ten-years)
 2. ["SP500 2007-2020.csv" as SPX(USD)](https://www.marketwatch.com/investing/index/spx)
 3. ["silver history.csv" as SLV(USD)](https://www.macrotrends.net/1470/historical-silver-prices-100-year-chart)
@@ -32,7 +32,7 @@ In order to accurately train and test a model on this data, it needs to be prope
 
 *   **Step 1:** First, I had to decide on a time period for the time series! I was limited by the time frames of the individual CSV files as well as trends in the data. Stock and index values are heavily dependent on trends in the market. Trends in the stock market are periods of time [lasting 18 weeks or more](https://www.investors.com/how-to-invest/investors-corner/sell-rules-growth-stocks-break-uptrend-line/#:~:text=A%20properly%20drawn%20trend%20line,of%20at%20least%2018%20weeks). I chose August 21, 2017 as a start date for the data, as it will have just enough data in the test split (20% of the data) to include a trend within it.
 *   **Step 2:** Next, I had to merge all of the CSV's together onto a common index. I am only concerned about predicting the closing price of GLD, so I only kept the closing value and date columns in each of the other data frames. Then I set the date column as the index for each of them. After choosing the time frame for the data frames, I used pd.merge() to merge all of them onto a common index.
-*    **Step 3:** Finally, I had to go through and check for Nan's. Since the stock market is closed on weekends and holidays, I had to figure out what I was going to do to fill the days where no closing price was recorded. I found that historically, other models have often foward filled the Nans for stock data. However, I wanted to be sure this didn't heavily affect the data. So I compared the standard deviations, means, min/max, and quartiles before and after using ffill on the data frame. The greatest change was that the standard deviation for SPX increased by about 68 cents.
+*    **Step 3:** Finally, I had to go through and check for null values in the data. Since the stock market is closed on weekends and holidays, I had to figure out what I was going to do to fill the days where no closing price was recorded. I found that historically, other models have often foward filled the Nans for stock data. However, I wanted to be sure this didn't heavily affect the data. So I compared the standard deviations, means, min/max, and quartiles before and after using ffill on the data frame. The greatest change was that the standard deviation for SPX increased by about 68 cents.
 
 ## 3. Exploratory Data Analysis (EDA)
 
@@ -56,7 +56,7 @@ Here, it's definitely apparent that there exists a positive, linear trend betwee
 
 ![heatmap](https://github.com/Shane-McCallum/ARIMAX-Gold-and-S-P500-Time-Series/blob/master/2.%20README%20files/heatmap.png)
 
-Right off the bat, it's clear that BARR and SLV are highly correlated with GLD. Somewhat disappointingly, GLD and SPX don't seem to have a strong correlation.
+Right off the bat, it's clear that BARR and SLV are highly correlated with GLD. GLD and SPX, however, don't seem to have a statistically significant correlation.
 
 4. Fret not though, for there exists some measurements of cointegration between time series. First, I tested their levels of cointegration with the Cointegrated Augmented Dickey Fuller ([CADF](https://pythonforfinance.net/2016/05/09/python-backtesting-mean-reversion-part-2/)) test. This test attempts to find a stationary, linear combination from time series that are not themselves stationary.
 
@@ -99,8 +99,8 @@ Testing the ARIMAX model resulted in an RMSE of 22.947 and a MAPE of 8.369%. Onl
 
 ## 5. Conclusion and Future Tests
 
-Overall, the difference between the ARIMA and ARIMAX models are not significant. So, while the ARIMAX model technically outperformed the ARIMA model, and the use of S&P 500 index for predicting the value of Gold could be argued, it is not necessarily any better than predicting the value of Gold without it. 
+The true value in a model like this stems from it's potential usefulness in the finance sector. Even with the COVID-19 market crash in March, 2020, the model was still accurate in it's predictions. A lot of trading and investment is determined with forecasting, such as "put" and "call" options. Being able to forecast the closing value of a stock tomorrow allows for investors to make more informed descisions about what to buy or sell today.
 
-Reasons for this have been theorized, such as gold being used to offset decline in the stock market. However, when the USD was backed by gold, the causal relationship between the stock market and gold might have existed. Since the 1970's, though, when the US adopted a fiat currency system, this relationship has changed.
+Overall, the difference between the ARIMA and ARIMAX models are not significant. So, while the ARIMAX model technically outperformed the ARIMA model, and the use of S&P 500 index for predicting the value of Gold could be argued, it is not necessarily any better than predicting the value of Gold without it. Reasons for this have been theorized, such as gold being used to offset decline in the stock market. However, when the USD was backed by gold, the causal relationship between the stock market and gold might have existed. Since the 1970's, though, when the US adopted a fiat currency system, this relationship has changed.
 
 Perhaps a better test would be to see if the value of gold could be accurately predicted from the Barrick Gold Mining, Corp. stock. This could be significant as Barrick’s stock was shown to be caused by the value of the S&P 500 index as well.
